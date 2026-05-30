@@ -32,8 +32,6 @@ func main() {
 	var reader io.Reader
 
 	if flag.NArg() == 0 {
-		fmt.Println("No filename provided. Please provide input now:")
-
 		reader = os.Stdin
 	} else {
 		// note:
@@ -49,24 +47,25 @@ func main() {
 			log.Fatal(err)
 		}
 		reader = data
-		defer data.Close() // data closed at the end of main
+		defer func() {
+			err := data.Close() // data closed at the end of main
+			if err != nil {
+				log.Fatalf("Failed to close data input: %v", err)
+			}
+		}()
 	}
 
-	wordCountsMap, err := Count(reader, caseSensitiveFlag)
+	wordCountsMap, err := Count(reader, *caseSensitiveFlag)
 	// call to count with error handling
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err) // TODO what is diff between Fprintln and Println
+		log.Fatalf("failed to count input : %v", err)
+		// Or: fmt.Fprintln(os.Stderr, "reading standard input:", err); os.Exit(1)
 	}
 
 	// order based on count
 	// create comparison function
 	countCmp := func(a, b wordCount) int {
-		res := cmp.Compare(b.count, a.count)
-		if res == 0 {
-			return cmp.Compare(b.word, a.word)
-		} else {
-			return cmp.Compare(b.count, a.count)
-		}
+		return cmp.Or(cmp.Compare(b.count, a.count), cmp.Compare(a.word, b.word))
 	}
 
 	// copy the map into a slice
@@ -87,26 +86,22 @@ func main() {
 	for _, x := range wordCountsSlice {
 		fmt.Printf("%d %s\n", x.count, x.word)
 	}
-	os.Exit(1)
 }
 
-func Count(r io.Reader, caseSensitiveFlag *bool) (map[string]int, error) {
+func Count(r io.Reader, caseSensitiveFlag bool) (map[string]int, error) {
 	wordCountsMap := make(map[string]int)
 
 	// create a scanner to loop through each line
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() { // Scan() returns the string up to \n
 		text := scanner.Text()
-		if !*caseSensitiveFlag {
+		if !caseSensitiveFlag {
 			text = strings.ToLower(text)
 		}
 
-		words := strings.Split(text, " ")
+		words := strings.Fields(text)
 
 		for _, word := range words {
-			if word == "" {
-				continue
-			}
 			wordCountsMap[word]++
 		}
 	}

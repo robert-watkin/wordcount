@@ -25,7 +25,7 @@ func TestCount(t *testing.T) {
 		// run the test
 		t.Run(tt.in, func(t *testing.T) {
 			// call the Count() function and handle any error returns or unexpected returns
-			got, err := Count(strings.NewReader(tt.in), &tt.caseSensitive)
+			got, err := Count(strings.NewReader(tt.in), tt.caseSensitive)
 			if err != nil {
 				t.Fatalf("count() returned error: %v", err)
 			}
