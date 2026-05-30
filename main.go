@@ -18,7 +18,12 @@ type wordCount struct {
 }
 
 func main() {
-	// var iFlag = flag.String("i", "", "Input a file name")
+	var topFlag = flag.Int("top", 0, "Specify the top number of records to return")
+	var minFlag = flag.Int("min", 0, "Specify the minimum number of records to return")
+
+	caseSensitiveFlag := flag.Bool("case-sensitive", false, "Case sensitive flag")
+	flag.BoolVar(caseSensitiveFlag, "c", false, "Case sensitive flag (shorthand)")
+
 	flag.Parse()
 	var filename = flag.Arg(0)
 
@@ -52,7 +57,12 @@ func main() {
 	// create a scanner to loop through each line
 	scanner := bufio.NewScanner(src)
 	for scanner.Scan() { // Scan() returns the string up to \n
-		words := strings.Split(scanner.Text(), " ")
+		text := scanner.Text()
+		if !*caseSensitiveFlag {
+			text = strings.ToLower(text)
+		}
+
+		words := strings.Split(text, " ")
 
 		for _, word := range words {
 			if word == "" {
@@ -88,9 +98,16 @@ func main() {
 	// sort the slice based on the comparison function
 	slices.SortFunc(wordCountsSlice, countCmp)
 
+	if *topFlag != 0 {
+		wordCountsSlice = wordCountsSlice[:*topFlag]
+	}
+
+	if *minFlag != 0 {
+		wordCountsSlice = wordCountsSlice[0:*minFlag]
+	}
+
 	for _, x := range wordCountsSlice {
 		fmt.Printf("%d %s\n", x.count, x.word)
 	}
-	fmt.Println("exiting...")
 	os.Exit(1)
 }
