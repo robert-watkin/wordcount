@@ -4,24 +4,25 @@ The script will take in a file or read from stdin and count the number of words 
 
 ## install
 
-go install wcgo
-
-## run
-
-wcgo README.md
+go install github.com/robert-watkin/wcgo@latest
 
 ## usage
 
-./wcgo --min <number> --top <number> <file>
+```sh
+wcgo --min <number> --top <number> <file>
+```
 
 ## example
 
-./wcgo README.md
-./wcgo --min 5 --top 10 README.md
-./wcgo // read from stdin
+```sh
+wcgo README.md
+wcgo --min 5 --top 10 README.md
+wcgo // read from stdin
+```
 
 ## testing
 
+```sh
 go test // run tests
 go test -v // verbose
-
+```
